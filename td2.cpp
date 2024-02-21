@@ -9,6 +9,8 @@
 #include <string>
 #include <limits>
 #include <algorithm>
+#include <sstream>
+#include <fstream>
 
 #include "cppitertools/range.hpp"
 #include "gsl/span"
@@ -156,7 +158,7 @@ Film* lireFilm(istream& fichier//[
 	//Film* filmp = new Film(film); //NOTE: On aurait normalement fait le "new" au début de la fonction pour directement mettre les informations au bon endroit; on le fait ici pour que le code ci-dessus puisse être directement donné aux étudiants sans qu'ils aient le "new" déjà écrit.
 	Film* filmp = new Film();
 	*filmp = move(film); // Copie des membres individuels de film vers filmp
-	cout << "Création Film " << film.titre << endl;
+	cout << "Création Film " << filmp->titre << endl;
 	//filmp->acteurs.elements = new Acteur * [filmp->acteurs.nElements];
 	filmp->acteurs.elements = make_unique<shared_ptr<Acteur>[]>(filmp->acteurs.nElements);
 	/*
@@ -178,7 +180,7 @@ Film* lireFilm(istream& fichier//[
 	//[
 	return filmp;
 	//]
-	return {}; //TODO: Retourner le pointeur vers le nouveau film.
+	//return {}; //TODO: Retourner le pointeur vers le nouveau film.
 }
 
 ListeFilms::ListeFilms(const string& nomFichier) : possedeLesFilms_(true)
@@ -253,24 +255,39 @@ ListeFilms::~ListeFilms()
 }
 //]
 
-void afficherActeur(const Acteur& acteur)
-{
-	cout << "  " << acteur.nom << ", " << acteur.anneeNaissance << " " << acteur.sexe << endl;
+//void afficherActeur(const Acteur& acteur)
+//{
+//	cout << "  " << acteur.nom << ", " << acteur.anneeNaissance << " " << acteur.sexe << endl;
+//}
+ostream& operator<< (ostream& cout, const Acteur& acteur) {
+	return cout << "  " << acteur.nom << ", " << acteur.anneeNaissance << " " << acteur.sexe << endl;
 }
 
 //TODO: Une fonction pour afficher un film avec tous ces acteurs (en utilisant la fonction afficherActeur ci-dessus).
 //[
-void afficherFilm(const Film& film)
+//void afficherFilm(const Film& film)
+//{
+//	cout << "Titre: " << film.titre << endl;
+//	cout << "  Réalisateur: " << film.realisateur << "  Année :" << film.anneeSortie << endl;
+//	cout << "  Recette: " << film.recette << "M$" << endl;
+//
+//	cout << "Acteurs:" << endl;
+//	for (const shared_ptr<Acteur> acteur : spanListeActeurs(film.acteurs))
+//		afficherActeur(*acteur);
+//}
+//]
+ostream& operator<< (ostream& cout, const Film& film)
 {
 	cout << "Titre: " << film.titre << endl;
 	cout << "  Réalisateur: " << film.realisateur << "  Année :" << film.anneeSortie << endl;
 	cout << "  Recette: " << film.recette << "M$" << endl;
 
 	cout << "Acteurs:" << endl;
-	for (const shared_ptr<Acteur> acteur : spanListeActeurs(film.acteurs))
-		afficherActeur(*acteur);
+	for (const shared_ptr<Acteur>& acteur : spanListeActeurs(film.acteurs)) {
+		cout << *acteur;
+	}
+	return cout;
 }
-//]
 
 void afficherListeFilms(const ListeFilms& listeFilms)
 {
@@ -292,7 +309,8 @@ void afficherListeFilms(const ListeFilms& listeFilms)
 		//]
 		//TODO: Afficher le film.
 		//[
-		afficherFilm(*film);
+		// afficherFilm(*film);
+		cout << *film << *film;
 		//]
 		cout << ligneDeSeparation;
 	}
@@ -328,7 +346,8 @@ int main()
 	cout << ligneDeSeparation << "Le premier film de la liste est:" << endl;
 	//TODO: Afficher le premier film de la liste.  Devrait être Alien.
 	//[
-	afficherFilm(*listeFilms.enSpan()[0]);
+	//afficherFilm(*listeFilms.enSpan()[0]);
+	cout << *listeFilms.enSpan()[0];
 	//]
 
 	cout << ligneDeSeparation << "Les films sont:" << endl;
