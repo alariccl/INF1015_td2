@@ -62,15 +62,14 @@ string lireString(istream& fichier)
 //[
 void ListeFilms::changeDimension(int nouvelleCapacite)
 {
-	Film** nouvelleListe = new Film * [nouvelleCapacite];
+	Film** nouvelleListe = new Film*[nouvelleCapacite];
 
 	if (elements != nullptr) {  // Noter que ce test n'est pas nécessaire puique nElements sera zéro si elements est nul, donc la boucle ne tentera pas de faire de copie, et on a le droit de faire delete sur un pointeur nul (ça ne fait rien).
 		nElements = min(nouvelleCapacite, nElements);
-		for (int i : range(nElements))
+		for (int i : range(nElements)) 
 			nouvelleListe[i] = elements[i];
 		delete[] elements;
 	}
-
 	elements = nouvelleListe;
 	capacite = nouvelleCapacite;
 }
@@ -107,13 +106,13 @@ void ListeFilms::enleverFilm(const Film* film)
 //TODO: Une fonction pour trouver un Acteur par son nom dans une ListeFilms, qui retourne un pointeur vers l'acteur, ou nullptr si l'acteur n'est pas trouvé.  Devrait utiliser span.
 //[
 // Voir la NOTE ci-dessous pourquoi Acteur* n'est pas const.  Noter que c'est valide puisque c'est la struct uniquement qui est const dans le paramètre, et non ce qui est pointé par la struct.
-span<Acteur*> spanListeActeurs(const ListeActeurs& liste) { return span<Acteur*>(liste.elements.get(), liste.nElements); } // TODO : 
+span<shared_ptr<Acteur>> spanListeActeurs(const ListeActeurs& liste) { return span<shared_ptr<Acteur>>(liste.elements.get(), liste.nElements); }
 
 //NOTE: Doit retourner un Acteur modifiable, sinon on ne peut pas l'utiliser pour modifier l'acteur tel que demandé dans le main, et on ne veut pas faire écrire deux versions.
-Acteur* ListeFilms::trouverActeur(const string& nomActeur) const
+shared_ptr<Acteur> ListeFilms::trouverActeur(const std::string& nomActeur) const
 {
 	for (const Film* film : enSpan()) {
-		for (Acteur* acteur : spanListeActeurs(film->acteurs)) {
+		for (shared_ptr<Acteur> acteur : spanListeActeurs(film->acteurs)) {
 			if (acteur->nom == nomActeur)
 				return acteur;
 		}
@@ -123,7 +122,7 @@ Acteur* ListeFilms::trouverActeur(const string& nomActeur) const
 //]
 
 //TODO: Compléter les fonctions pour lire le fichier et créer/allouer une ListeFilms.  La ListeFilms devra être passée entre les fonctions, pour vérifier l'existence d'un Acteur avant de l'allouer à nouveau (cherché par nom en utilisant la fonction ci-dessus).
-Acteur* lireActeur(istream& fichier//[
+shared_ptr<Acteur> lireActeur(istream& fichier//[
 	, ListeFilms& listeFilms//]
 )
 {
@@ -132,12 +131,12 @@ Acteur* lireActeur(istream& fichier//[
 	acteur.anneeNaissance = int(lireUintTailleVariable(fichier));
 	acteur.sexe = char(lireUintTailleVariable(fichier));
 	//[
-	Acteur* acteurExistant = listeFilms.trouverActeur(acteur.nom);
+	shared_ptr<Acteur> acteurExistant = listeFilms.trouverActeur(acteur.nom);
 	if (acteurExistant != nullptr)
 		return acteurExistant;
 	else {
 		cout << "Création Acteur " << acteur.nom << endl;
-		return new Acteur(acteur);
+		return make_shared<Acteur>(acteur);
 	}
 	//]
 	return {}; //TODO: Retourner un pointeur soit vers un acteur existant ou un nouvel acteur ayant les bonnes informations, selon si l'acteur existait déjà.  Pour fins de débogage, affichez les noms des acteurs crées; vous ne devriez pas voir le même nom d'acteur affiché deux fois pour la création.
@@ -159,13 +158,13 @@ Film* lireFilm(istream& fichier//[
 	*filmp = move(film); // Copie des membres individuels de film vers filmp
 	cout << "Création Film " << film.titre << endl;
 	//filmp->acteurs.elements = new Acteur * [filmp->acteurs.nElements];
-	filmp->acteurs.elements = make_unique<Acteur * []>(filmp->acteurs.nElements);
+	filmp->acteurs.elements = make_unique<shared_ptr<Acteur>[]>(filmp->acteurs.nElements);
 	/*
 	//]
 	for (int i = 0; i < film.acteurs.nElements; i++) {
 		//[
 	*/
-	for (Acteur*& acteur : spanListeActeurs(filmp->acteurs)) {
+	for (shared_ptr<Acteur>& acteur : spanListeActeurs(filmp->acteurs)) {
 		acteur =
 			//]
 			lireActeur(fichier//[
@@ -173,7 +172,7 @@ Film* lireFilm(istream& fichier//[
 			); //TODO: Placer l'acteur au bon endroit dans les acteurs du film.
 		//TODO: Ajouter le film à la liste des films dans lesquels l'acteur joue.
 	//[
-		acteur->joueDans.ajouterFilm(filmp);
+		//acteur->joueDans.ajouterFilm(filmp);
 		//]
 	}
 	//[
@@ -224,17 +223,18 @@ void detruireActeur(Acteur* acteur)
 	cout << "Destruction Acteur " << acteur->nom << endl;
 	delete acteur;
 }
-bool joueEncore(const Acteur* acteur)
+/*bool joueEncore(const Acteur* acteur)
 {
 	return acteur->joueDans.size() != 0;
-}
+}*/
+
 void detruireFilm(Film* film)
 {
-	for (Acteur* acteur : spanListeActeurs(film->acteurs)) {
+	/*for (Acteur* acteur : spanListeActeurs(film->acteurs)) {
 		acteur->joueDans.enleverFilm(film);
 		if (!joueEncore(acteur))
 			detruireActeur(acteur);
-	}
+	}*/
 	cout << "Destruction Film " << film->titre << endl;
 	//delete[] film->acteurs.elements.release();
 	delete film;
@@ -249,7 +249,7 @@ ListeFilms::~ListeFilms()
 	if (possedeLesFilms_)
 		for (Film* film : enSpan())
 			detruireFilm(film);
-	//delete[] elements;
+	delete[] elements;
 }
 //]
 
@@ -267,7 +267,7 @@ void afficherFilm(const Film& film)
 	cout << "  Recette: " << film.recette << "M$" << endl;
 
 	cout << "Acteurs:" << endl;
-	for (const Acteur* acteur : spanListeActeurs(film.acteurs))
+	for (const shared_ptr<Acteur> acteur : spanListeActeurs(film.acteurs))
 		afficherActeur(*acteur);
 }
 //]
@@ -316,8 +316,7 @@ void afficherListeFilms(const ListeFilms& listeFilms)
 int main()
 {
 	bibliotheque_cours::activerCouleursAnsi();  // Permet sous Windows les "ANSI escape code" pour changer de couleurs https://en.wikipedia.org/wiki/ANSI_escape_code ; les consoles Linux/Mac les supportent normalement par défaut.
-
-	int* fuite = new int; //TODO: Enlever cette ligne après avoir vérifié qu'il y a bien un "Fuite detectee" de "4 octets" affiché à la fin de l'exécution, qui réfère à cette ligne du programme.
+	// int* fuite = new int; //TODO: Enlever cette ligne après avoir vérifié qu'il y a bien un "Fuite detectee" de "4 octets" affiché à la fin de l'exécution, qui réfère à cette ligne du programme.
 
 	static const string ligneDeSeparation = "\n\033[35m════════════════════════════════════════\033[0m\n";
 

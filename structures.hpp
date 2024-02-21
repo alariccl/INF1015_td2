@@ -6,6 +6,7 @@
 #include "gsl/span"
 #include <memory>
 using gsl::span;
+using namespace std;
 
 struct Film; struct Acteur; // Permet d'utiliser les types alors qu'ils seront définis après.
 
@@ -17,7 +18,7 @@ public:
 	~ListeFilms();
 	void ajouterFilm(Film* film);
 	void enleverFilm(const Film* film);
-	Acteur* trouverActeur(const std::string& nomActeur) const;
+	shared_ptr<Acteur> trouverActeur(const string& nomActeur) const;
 	span<Film*> enSpan() const;
 	int size() const { return nElements; }
 
@@ -29,15 +30,14 @@ private:
 	bool possedeLesFilms_ = false; // Les films seront détruits avec la liste si elle les possède.
 };
 
-struct ListeActeurs 
-{
+struct ListeActeurs {
 	int capacite = 0, nElements = 0;
-	std::unique_ptr<Acteur* []> elements;
-	ListeActeurs(int capacite = 0, int nElements = 0) 
+	std::unique_ptr<std::shared_ptr<Acteur>[]> elements;
+
+	ListeActeurs(int capacite = 0, int nElements = 0)
+		: capacite(capacite), nElements(nElements)
 	{
-		capacite = capacite;
-		nElements = nElements; 
-		elements = std::make_unique<Acteur * []>(nElements);
+		elements = make_unique<shared_ptr<Acteur>[]>(nElements);
 	}
 };
 
