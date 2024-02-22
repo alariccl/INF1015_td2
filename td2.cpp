@@ -310,7 +310,7 @@ void afficherListeFilms(const ListeFilms& listeFilms)
 		//TODO: Afficher le film.
 		//[
 		// afficherFilm(*film);
-		cout << *film << *film;
+		cout << *film;
 		//]
 		cout << ligneDeSeparation;
 	}
@@ -370,8 +370,8 @@ int main()
 
 	//TODO: Détruire et enlever le premier film de la liste (Alien).  Ceci devrait "automatiquement" (par ce que font vos fonctions) détruire les acteurs Tom Skerritt et John Hurt, mais pas Sigourney Weaver puisqu'elle joue aussi dans Avatar.
 	//[
-	detruireFilm(listeFilms.enSpan()[0]);
-	listeFilms.enleverFilm(listeFilms.enSpan()[0]);
+	//detruireFilm(listeFilms.enSpan()[0]);
+	//listeFilms.enleverFilm(listeFilms.enSpan()[0]);
 	//]
 
 	cout << ligneDeSeparation << "Les films sont maintenant:" << endl;
@@ -386,6 +386,9 @@ int main()
 	listeFilms.enleverFilm(nullptr); // Enlever un film qui n'est pas dans la liste (clairement que nullptr n'y est pas).
 	//afficherFilmographieActeur(listeFilms, "N'existe pas"); // Afficher les films d'un acteur qui n'existe pas.
 	//]
+
+	// Chapitre 7-8
+	Film skylien = *listeFilms[0]
 
 	//TODO: Détruire tout avant de terminer le programme.  L'objet verifierFuitesAllocations devrait afficher "Aucune fuite detectee." a la sortie du programme; il affichera "Fuite detectee:" avec la liste des blocs, s'il manque des delete.
 //[

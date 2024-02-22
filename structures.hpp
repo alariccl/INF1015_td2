@@ -21,6 +21,7 @@ public:
 	shared_ptr<Acteur> trouverActeur(const string& nomActeur) const;
 	span<Film*> enSpan() const;
 	int size() const { return nElements; }
+	Film*& operator[] (int index) { return elements[index]; }
 
 private:
 	void changeDimension(int nouvelleCapacite);
