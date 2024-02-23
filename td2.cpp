@@ -387,7 +387,7 @@ int main()
 	//]
 
 	// Chapitre 7-8
-	Film skylien = *listeFilms[0];
+	Film* skylien = listeFilms[0];
 
 	//TODO: Détruire tout avant de terminer le programme.  L'objet verifierFuitesAllocations devrait afficher "Aucune fuite detectee." a la sortie du programme; il affichera "Fuite detectee:" avec la liste des blocs, s'il manque des delete.
 //[
