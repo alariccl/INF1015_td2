@@ -36,31 +36,31 @@ struct ListeActeurs {
 	int capacite = 0, nElements = 0;
 	std::unique_ptr<std::shared_ptr<Acteur>[]> elements;
 
-	ListeActeurs(int capacite = 0, int nElements = 0)
-		: capacite(capacite), nElements(nElements)
-	{
-		elements = make_unique<shared_ptr<Acteur>[]>(capacite);
-	}
-	ListeActeurs& operator= (const ListeActeurs& autre)
-	{
-		if (this != &autre)
-		{
-			capacite = autre.capacite;
-			nElements = autre.nElements;
+	//ListeActeurs(int capacite = 0, int nElements = 0)
+	//	: capacite(capacite), nElements(nElements)
+	//{
+	//	elements = make_unique<shared_ptr<Acteur>[]>(capacite);
+	//}
+	//ListeActeurs& operator= (const ListeActeurs& autre)
+	//{
+	//	if (this != &autre)
+	//	{
+	//		capacite = autre.capacite;
+	//		nElements = autre.nElements;
 
-			elements = make_unique<shared_ptr<Acteur>[]>(nElements = autre.capacite);
-			for (int i = 0; i < nElements; i++)
-			{
-				elements[i] = autre.elements[i]; ///////////////////make_shared<Acteur>(autre.elements[i]); 
-			}
+	//		elements = make_unique<shared_ptr<Acteur>[]>(nElements = autre.capacite);
+	//		for (int i = 0; i < nElements; i++)
+	//		{
+	//			elements[i] = autre.elements[i]; ///////////////////make_shared<Acteur>(autre.elements[i]); 
+	//		}
 
-		}
-		return *this;
-	}
-	ListeActeurs(const Film& autre) : capacite(0), nElements(0), elements(nullptr)
-	{
-		*this = autre;
-	};
+	//	}
+	//	return *this;
+	//}
+	//ListeActeurs(const Film& autre) : capacite(0), nElements(0), elements(nullptr)
+	//{
+	//	*this = autre;
+	//};
 };
 
 
@@ -72,31 +72,31 @@ struct Film
 
 	Film() = default;
 
-	Film(const string& titre, const string& realisateur, int anneeSortie, int recette)
-		: titre(titre), realisateur(realisateur), anneeSortie(anneeSortie), recette(recette) {}
+	//Film(const string& titre, const string& realisateur, int anneeSortie, int recette)
+	//	: titre(titre), realisateur(realisateur), anneeSortie(anneeSortie), recette(recette) {}
 
-	Film& operator= (const Film& autre) 
-	{
-		if (this != &autre) {
-			titre = autre.titre;
-			realisateur = autre.realisateur;
-			anneeSortie = autre.anneeSortie;
-			recette = autre.recette;
-			acteurs = autre.acteurs;
-		}
-		return *this;
-	};
-	Film(const Film& autre) 
-	{
-		*this = autre;
-	};
+	//Film& operator= (const Film& autre) 
+	//{
+	//	if (this != &autre) {
+	//		titre = autre.titre;
+	//		realisateur = autre.realisateur;
+	//		anneeSortie = autre.anneeSortie;
+	//		recette = autre.recette;
+	//		//acteurs = autre.acteurs;
+	//	}
+	//	return *this;
+	//};
+	//Film(const Film& autre) 
+	//{
+	//	*this = autre;
+	//};
 };
 
 struct Acteur
 {
 	std::string nom; int anneeNaissance = 0; char sexe = '\0';
 
-	Acteur(const string& nom, int anneeNaissance, char sexe) : nom(nom), anneeNaissance(anneeNaissance), sexe(sexe) {}
+	/*Acteur(const string& nom, int anneeNaissance, char sexe) : nom(nom), anneeNaissance(anneeNaissance), sexe(sexe) {}
 
 	Acteur() = default;
 
@@ -112,5 +112,5 @@ struct Acteur
 	Acteur(const Acteur& autre)
 	{
 		*this = autre;
-	};
+	};*/
 };
