@@ -164,7 +164,8 @@ ListeFilms::ListeFilms(const string& nomFichier) //: possedeLesFilms_(true)
 	int nElements = int(lireUintTailleVariable(fichier));
 
 	for ([[maybe_unused]] int i : range(nElements)) { //NOTE: On ne peut pas faire un span simple avec spanListeFilms car la liste est vide et on ajoute des éléments à mesure.
-		ajouterFilm(lireFilm(fichier, *this)); //TODO: Ajouter le film à la liste.
+		Film* film = lireFilm(fichier, *this);
+		ajouterFilm(film); //TODO: Ajouter le film à la liste.
 	}
 }
 
@@ -198,9 +199,9 @@ void detruireFilm(Film* film)
 //NOTE: Attention que c'est difficile que ça fonctionne correctement avec le destructeur qui détruit la liste.  Mon ancienne implémentation utilisait une méthode au lieu d'un destructeur.  Le problème est que la matière pour le constructeur de copie/move n'est pas dans le TD2 mais le TD3, donc si on copie une liste (par exemple si on la retourne de la fonction creerListe) elle sera incorrectement copiée/détruite.  Ici, creerListe a été converti en constructeur, qui évite ce problème.
 ListeFilms::~ListeFilms()
 {
-	if (possedeLesFilms_)
+	//if (possedeLesFilms_)
 		for (Film* film : enSpan())
-			detruireFilm(film);
+			delete film;
 	delete[] elements;
 }
 //]
@@ -355,10 +356,8 @@ int main()
 	//TODO: Faire les appels qui manquent pour avoir 0% de lignes non exécutées dans le programme (aucune ligne rouge dans la couverture de code; c'est normal que les lignes de "new" et "delete" soient jaunes).  Vous avez aussi le droit d'effacer les lignes du programmes qui ne sont pas exécutée, si finalement vous pensez qu'elle ne sont pas utiles.
 	//[
 	// Les lignes à mettre ici dépendent de comment ils ont fait leurs fonctions.  Dans mon cas:
-	listeFilms.enleverFilm(nullptr); // Enlever un film qui n'est pas dans la liste (clairement que nullptr n'y est pas).
+	//listeFilms.enleverFilm(nullptr); // Enlever un film qui n'est pas dans la liste (clairement que nullptr n'y est pas).
 	//afficherFilmographieActeur(listeFilms, "N'existe pas"); // Afficher les films d'un acteur qui n'existe pas.
 	//]
 	//TODO: Détruire tout avant de terminer le programme.  L'objet verifierFuitesAllocations devrait afficher "Aucune fuite detectee." a la sortie du programme; il affichera "Fuite detectee:" avec la liste des blocs, s'il manque des delete.
-//[
-//]
 }
