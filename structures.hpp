@@ -1,3 +1,10 @@
+////////////////////////////////////////////////////////////////////////////////
+/// \file   structures.cpp
+/// \author Alaric Chan Lock et Bryan Sanchez
+///
+/// Les déclarations de ce qui est dans tp2.cpp
+////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 // Structures mémoires pour une collection de films.
 
@@ -6,7 +13,6 @@
 #include <functional>
 #include <cassert>
 #include "gsl/span"
-
 using gsl::span;
 using namespace std;
 
@@ -21,7 +27,7 @@ public:
 	span<Film*> enSpan() const;
 	int size() const { return nElements; }
 	void detruire(bool possedeLesFilms = false);
-	Film*& operator[] (int index) { return elements[index]; }
+	Film*& operator[] (int index) { assert(0 <= index && index < nElements);  return elements[index]; }
 	Film* trouver(const function<bool(const Film&)>& critere) {
 		for (auto& film : enSpan())
 			if (critere(*film))
@@ -53,6 +59,8 @@ public:
 		for (int i = 0; i < nElements_; ++i)
 			elements_[i] = autre.elements_[i];
 	}
+	//NOTE: On n'a pas d'operator= de copie, ce n'était pas nécessaire pour répondre à l'énoncé. On aurait facilement pu faire comme dans les notes de cours et définir l'operator= puis l'utiliser dans le constructeur de copie.
+	//NOTE: Nos constructeur/operator= de move laissent la liste autre dans un état pas parfaitement valide; il est assez valide pour que la destruction et operator= de move fonctionnent, mais il ne faut pas tenter d'ajouter, de copier ou d'accéder aux éléments de cette liste qui "n'existe plus". Normalement le move sur les classes de la bibliothèque standard C++ laissent les objets dans un "valid but unspecified state" (https://en.cppreference.com/w/cpp/utility/move). Pour que l'état soit vraiment valide, on devrait remettre à zéro la capacité et nombre d'éléments de l'autre liste.
 	Liste(Liste<T>&&) = default;  // Pas nécessaire, mais puisque c'est si simple avec unique_ptr...
 	Liste<T>& operator= (Liste<T>&&) noexcept = default;  // Utilisé pour l'initialisation dans lireFilm.
 
@@ -62,24 +70,37 @@ public:
 		elements_[nElements_++] = move(element);
 	}
 
-	// Noter que ces accesseurs const permettent de modifier les éléments; on pourrait vouloir des versions const qui retournent des const shared_ptr, et des versions non const qui retournent des shared_ptr.
-	shared_ptr<T>& operator[] (int index) const { return elements_[index]; }
+	// Noter que ces accesseurs const permettent de modifier les éléments; on pourrait vouloir des versions const qui retournent des const shared_ptr, et des versions non const qui retournent des shared_ptr.  En C++23 on pourrait utiliser "deducing this".
+	shared_ptr<T>& operator[] (int index) const { assert(0 <= index && index < nElements_); return elements_[index]; }
 	span<shared_ptr<T>> enSpan() const { return span(elements_.get(), nElements_); }
 
 private:
 	int capacite_ = 0, nElements_ = 0;
-	unique_ptr<shared_ptr<T>[]> elements_; // Pointeur vers un tableau de Acteur*, chaque Acteur* pointant vers un Acteur.
+	unique_ptr<shared_ptr<T>[]> elements_;
 };
+
 using ListeActeurs = Liste<Acteur>;
 
-struct Film
+struct Item
 {
-	string titre, realisateur; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
-	int anneeSortie = 0, recette = 0; // Année de sortie et recette globale du film en millions de dollars
+	string titre = "";
+	int annee = 0;
+};
+
+struct Film : Item
+{
+	string realisateur; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
+	int recette = 0; // Année de sortie et recette globale du film en millions de dollars
 	ListeActeurs acteurs;
 };
 
 struct Acteur
 {
 	string nom; int anneeNaissance = 0; char sexe = '\0';
+};
+
+struct Livre : Item
+{
+	string auteur = "";
+	int millionsDeCopiesVendus = 0, nombresDePages = 0;
 };
