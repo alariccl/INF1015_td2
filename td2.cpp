@@ -185,7 +185,35 @@ void ListeFilms::detruire(bool possedeLesFilms)
 			delete film;
 	delete[] elements;
 }
-//]
+
+void transfererFilms(vector<Item>& bibliotheque, const ListeFilms& listeFilms)
+{
+	for (Film* film : listeFilms.enSpan()) 
+	{
+		bibliotheque.push_back(move(*film)); // arranger ici
+	}
+}
+
+void ajouterLivres(vector<Item>& bibliotheque, string nomFichier)
+{
+	ifstream fichier(nomFichier);
+
+	if (!fichier.is_open()) 
+	{
+		cout << "Error opening file." << std::endl;
+		return;
+	};
+	
+	Livre* livre = new Livre;
+	while (fichier >> quoted(livre->titre) >> livre->annee >> quoted(livre->auteur) >> livre->millionsDeCopiesVendus >> livre->nombresDePages) 
+	{
+		bibliotheque.push_back(move(*livre));
+	}
+
+	delete livre;
+
+	fichier.close();
+}
 
 // Pour que l'affichage de Film fonctionne avec <<, il faut aussi modifier l'affichage de l'acteur pour avoir un ostream; l'énoncé ne demande pas que ce soit un opérateur, mais tant qu'à y être...
 ostream& operator<< (ostream& os, const Acteur& acteur)
@@ -206,49 +234,59 @@ ostream& operator<< (ostream& os, const Film& film)
 		os << *acteur;
 	return os;
 }
-//]
-
-// Pas demandé dans l'énoncé de tout mettre les affichages avec surcharge, mais pourquoi pas.
-ostream& operator<< (ostream& os, const ListeFilms& listeFilms)
+ostream& operator<< (ostream& os, const vector<Item>& bibliotheque)
 {
 	static const string ligneDeSeparation = //[
 		"\033[32m────────────────────────────────────────\033[0m\n";
 	os << ligneDeSeparation;
-	for (const Film* film : listeFilms.enSpan()) {
-		os << *film << ligneDeSeparation;
+	for (const Item item : bibliotheque) {
+		os << item << ligneDeSeparation;
 	}
 	return os;
 }
 
-void transfererFilms(vector<Item>& bibliotheque, const ListeFilms& listeFilms)
+ostream& operator<< (ostream& os, const Affichable& affichable)
 {
-	for (Film* film : listeFilms.enSpan()) 
-	{
-		bibliotheque.push_back(move(*film)); // arranger ici
-	}
+	/*affichable.afficher(os);*/
+	os << affichable.annee;
+	return os;
 }
 
-void ajouterLivres(vector<Item>& bibliotheque, string nomFichier)
+ostream& operator<< (ostream& os, const Item& item) 
 {
-	ifstream fichier(nomFichier);
-
-	if (!fichier.is_open()) 
-	{
-		cout << "Error opening file." << std::endl;
-		return;
-	};
-	
-
-	Livre* livre = new Livre;
-	while (fichier >> quoted(livre->titre) >> livre->annee >> quoted(livre->auteur) >> livre->millionsDeCopiesVendus >> livre->nombresDePages) 
-	{
-		bibliotheque.push_back(move(*livre));
-	}
-
-	delete livre;
-
-	fichier.close();
+	os << item.titre << endl
+		<< item.annee << endl;
+	return os;
 }
+
+ostream& operator<< (ostream& os, const Livre& livre)
+{
+	os << livre.titre << livre.annee << livre.millionsDeCopiesVendus << livre.nombresDePages;
+	return os;
+}
+
+ostream& operator<< (ostream& os, const FilmLivre& filmLivre)
+{
+	os << "Titre: " << filmLivre.titre << endl;
+	os << "  Réalisateur: " << filmLivre.realisateur << "  Année : " << filmLivre.annee << endl;
+	os << "  Recette: " << filmLivre.recette << " M$" << endl;
+
+	os << "  Acteurs:" << endl;
+	for (const shared_ptr<Acteur>& acteur : filmLivre.acteurs.enSpan())
+		os << *acteur;
+	os << endl << "Base sur le livre de l'auteur: " << filmLivre.auteur << endl;
+	os << "  Millions de copies vendues: " << filmLivre.millionsDeCopiesVendus << " M copies" << endl;
+	os << "  nombre de pages: " << filmLivre.nombresDePages << " pages" << endl;
+	return os;
+}
+
+//Item* trouver(const vector<Item> bibliotheque, const auto& critere)
+//{
+//	for (auto& item : bibliotheque)
+//		if (critere(item))
+//			return item.get();
+//	return nullptr;
+//}
 
 int main()
 {
@@ -265,86 +303,15 @@ int main()
 	transfererFilms(bibliotheque, listeFilms);
 	ajouterLivres(bibliotheque, "livres.txt");
 
-	for (int i : range(size(bibliotheque))) {
-		cout << bibliotheque[i].titre << endl; 
-	}
-
-	//cout << ligneDeSeparation << "Le premier film de la liste est:" << endl;
-	//// Le premier film de la liste.  Devrait être Alien.
-	//cout << *listeFilms[0];
-
-	//// Tests chapitre 7:
-	//ostringstream tamponStringStream;
-	//tamponStringStream << *listeFilms[0];
-	//string filmEnString = tamponStringStream.str();
-	//assert(filmEnString ==
-	//	"Titre: Alien\n"
-	//	"  Réalisateur: Ridley Scott  Année :1979\n"
-	//	"  Recette: 203M$\n"
-	//	"Acteurs:\n"
-	//	"  Tom Skerritt, 1933 M\n"
-	//	"  Sigourney Weaver, 1949 F\n"
-	//	"  John Hurt, 1940 M\n"
-	//);
-
-	//cout << ligneDeSeparation << "Les films sont:" << endl;
-	//// Affiche la liste des films.  Il devrait y en avoir 7 + 1 (le "Film juste pour la couverture de code").
-	//cout << listeFilms;
-
-	//listeFilms.trouverActeur("Benedict Cumberbatch")->anneeNaissance = 1976;
-
-	//// Tests chapitres 7-8:
-	//// Les opérations suivantes fonctionnent.
-	//Film skylien = *listeFilms[0];
-	//skylien.titre = "Skylien";
-	//skylien.acteurs[0] = listeFilms[1]->acteurs[0];
-	//skylien.acteurs[0]->nom = "Daniel Wroughton Craig";
-	//cout << ligneDeSeparation
-	//	<< "Les films copiés/modifiés, sont:\n"
-	//	<< skylien << *listeFilms[0] << *listeFilms[1] << ligneDeSeparation;
-	//assert(skylien.acteurs[0]->nom == listeFilms[1]->acteurs[0]->nom);
-	//assert(skylien.acteurs[0]->nom != listeFilms[0]->acteurs[0]->nom);
-
-	//// Tests chapitre 10:
-	//auto film955 = listeFilms.trouver([](const auto& f) { return f.recette == 955; });
-	//cout << "\nFilm de 955M$:\n" << *film955;
-	//assert(film955->titre == "Le Hobbit : La Bataille des Cinq Armées");
-	//assert(listeFilms.trouver([](const auto&) { return false; }) == nullptr); // Pour la couveture de code: chercher avec un critère toujours faux ne devrait pas trouver.
-	//// Exemple de condition plus compliquée: (pas demandé)
-	//auto estVoyelle = [](char c) { static const string voyelles = "AEUOUYaeiouy"; return voyelles.find(c) != voyelles.npos; };
-	//auto commenceParVoyelle = [&](const string& x) { return !x.empty() && estVoyelle(x[0]); };
-	//assert(listeFilms.trouver([&](const auto& f) { return commenceParVoyelle(f.titre); }) == listeFilms[0]);
-	//assert(listeFilms.trouver([&](const auto& f) { return f.acteurs[0]->nom[0] != 'T'; }) == listeFilms[1]);
-	//assert(listeFilms.trouver([&](const auto& f) { return commenceParVoyelle(f.titre) && f.acteurs[0]->nom[0] != 'T'; }) == listeFilms[2]);
-
-	//// Tests chapitre 9:
-	//Liste<string> listeTextes(2);
-	//listeTextes.ajouter(make_shared<string>("Bonjour"));
-	//listeTextes.ajouter(make_shared<string>("Allo"));
-	//Liste<string> listeTextes2 = listeTextes;
-	//listeTextes2[0] = make_shared<string>("Hi");
-	//*listeTextes2[1] = "Allo!";
-	//assert(*listeTextes[0] == "Bonjour");
-	//assert(*listeTextes[1] == *listeTextes2[1]);
-	//assert(*listeTextes2[0] == "Hi");
-	//assert(*listeTextes2[1] == "Allo!");
-	//listeTextes = move(listeTextes2);  // Pas demandé, mais comme j'ai fait la méthode on va la tester; noter que la couverture de code dans VisualStudio ne montre pas la couverture des constructeurs/opérateurs= =default.
-	//assert(*listeTextes[0] == "Hi" && *listeTextes[1] == "Allo!");
-
-	//// Détruit et enlève le premier film de la liste (Alien).
-	//delete listeFilms[0];
-	//listeFilms.enleverFilm(listeFilms[0]);
-
-	//cout << ligneDeSeparation << "Les films sont maintenant:" << endl;
-	//cout << listeFilms;
-
-	//// Pour une couverture avec 0% de lignes non exécutées:
-	//{
-	//	int ancienneTailleListe = listeFilms.size();
-	//	listeFilms.enleverFilm(nullptr); // Enlever un film qui n'est pas dans la liste (clairement que nullptr n'y est pas).
-	//	assert(listeFilms.size() == ancienneTailleListe);
+	//for (int i : range(size(bibliotheque))) {
+	//	//cout << bibliotheque[i].titre << bibliotheque[i].annee << endl;
+	//	cout << bibliotheque[i] << endl;
 	//}
-
+	//cout << bibliotheque;
+	//
+	FilmLivre filmLivre();
+	//cout << filmLivre;
+	//
 	//// Détruire tout avant de terminer le programme.
 	listeFilms.detruire(true);
 }

@@ -81,17 +81,35 @@ private:
 
 using ListeActeurs = Liste<Acteur>;
 
-struct Item
+struct Affichable
 {
-	string titre = "";
 	int annee = 0;
+	virtual ~Affichable() = default;
+
+	friend ostream& operator<< (ostream& os, const Affichable& affichable);
 };
 
-struct Film : Item
+struct Item : virtual Affichable
+{
+	string titre = "";
+
+	friend Film* lireFilm(istream& fichier, ListeFilms& listeFilms);
+	friend shared_ptr<Acteur> ListeFilms::trouverActeur(const string& nomActeur) const;
+
+	friend ostream& operator<< (ostream& os, const Item& item);
+};
+
+struct Film : virtual public Item
 {
 	string realisateur; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
 	int recette = 0; // Année de sortie et recette globale du film en millions de dollars
 	ListeActeurs acteurs;
+
+	friend Film* lireFilm(istream& fichier, ListeFilms& listeFilms);
+	friend shared_ptr<Acteur> ListeFilms::trouverActeur(const string& nomActeur) const;
+
+	friend ostream& operator<< (ostream& os, const Film& film);
+
 };
 
 struct Acteur
@@ -99,8 +117,28 @@ struct Acteur
 	string nom; int anneeNaissance = 0; char sexe = '\0';
 };
 
-struct Livre : Item
+struct Livre : virtual public Item
 {
 	string auteur = "";
 	int millionsDeCopiesVendus = 0, nombresDePages = 0;
+
+	friend ostream& operator<< (ostream& os, const Livre& livre);
+};
+
+struct FilmLivre : public Film, public Livre
+{
+	FilmLivre() = default;
+	FilmLivre(const Film& film, const Livre& livre) 
+	{
+		titre = film.titre;
+		annee = film.annee;
+		realisateur = film.realisateur;
+		recette = film.recette;
+		acteurs = ListeActeurs(film.acteurs);
+		auteur = livre.auteur;
+		millionsDeCopiesVendus = livre.millionsDeCopiesVendus;
+		nombresDePages = livre.nombresDePages;
+	}
+
+	friend ostream& operator<< (ostream& os, const FilmLivre& filmLivre);
 };
