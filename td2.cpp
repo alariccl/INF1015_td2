@@ -223,70 +223,99 @@ ostream& operator<< (ostream& os, const Acteur& acteur)
 
 // Fonction pour afficher un film avec tous ces acteurs (en utilisant la fonction afficherActeur ci-dessus).
 //[
-ostream& operator<< (ostream& os, const Film& film)
-{
-	os << "Titre: " << film.titre << endl;
-	os << "  Réalisateur: " << film.realisateur << "  Année :" << film.annee << endl;
-	os << "  Recette: " << film.recette << "M$" << endl;
+//ostream& operator<< (ostream& os, const Film& film)
+//{
+//	os << "Titre: " << film.titre << endl;
+//	os << "  Réalisateur: " << film.realisateur << "  Année :" << film.annee << endl;
+//	os << "  Recette: " << film.recette << "M$" << endl;
+//
+//	os << "Acteurs:" << endl;
+//	for (const shared_ptr<Acteur>& acteur : film.acteurs.enSpan())
+//		os << *acteur;
+//	return os;
+//}
 
+//ostream& operator<< (ostream& os, const	vector<Item>& biblio)
+//{
+//	static const string ligneDeSeparation = //[
+//		"\033[32m────────────────────────────────────────\033[0m\n";
+//	os << ligneDeSeparation;
+//	for (int i : range(biblio.size()))
+//	{
+//		os << biblio[i] << ligneDeSeparation;
+//	}
+//	return os;
+//}
+
+ostream& Item::output(ostream& os) const
+{
+	os	<< "Titre: " << titre << endl 
+		<< "Année : " << annee << endl;
+	return os;
+}
+
+ostream& operator<< (ostream& os, const Item& item)
+{
+	return item.output(os);
+}
+
+ostream& Film::output(ostream& os) const
+{
+	os << "Titre: " << titre << endl;
+	os << "  Réalisateur: " << realisateur << "  Année : " << annee << endl;
+	os << "  Recette: " << recette << " M$" << endl;
 	os << "Acteurs:" << endl;
-	for (const shared_ptr<Acteur>& acteur : film.acteurs.enSpan())
+	for (const shared_ptr<Acteur>& acteur : acteurs.enSpan())
 		os << *acteur;
 	return os;
 }
-ostream& operator<< (ostream& os, const vector<Item>& bibliotheque)
+
+ostream& operator<< (ostream& os, const Film& film)
 {
-	static const string ligneDeSeparation = //[
-		"\033[32m────────────────────────────────────────\033[0m\n";
-	os << ligneDeSeparation;
-	for (const Item item : bibliotheque) {
-		os << item << ligneDeSeparation;
-	}
-	return os;
+	return film.output(os);
 }
 
-ostream& operator<< (ostream& os, const Affichable& affichable)
+ostream& Livre::output(ostream& os) const
 {
-	/*affichable.afficher(os);*/
-	os << affichable.annee;
-	return os;
-}
-
-ostream& operator<< (ostream& os, const Item& item) 
-{
-	os << item.titre << endl
-		<< item.annee << endl;
+	os << "Titre: " << titre << endl;
+	os << "  Auteur: " << auteur << "  Année : " << annee << endl;
+	os << "  Millions de copies vendues: " << millionsDeCopiesVendus << " M copies" << endl;
+	os << "  nombre de pages: " << nombresDePages << " pages" << endl;
 	return os;
 }
 
 ostream& operator<< (ostream& os, const Livre& livre)
 {
-	os << livre.titre << livre.annee << livre.millionsDeCopiesVendus << livre.nombresDePages;
+	return livre.output(os);
+}
+
+ostream& FilmLivre::output(ostream& os) const
+{
+	os << "Titre: " << Item::titre << endl;
+	os << "  Réalisateur: " << realisateur << "  Année : " << Affichable::annee << endl;
+	os << "  Recette: " << recette << " M$" << endl;
+	os << "  Acteurs:" << endl;
+	for (const shared_ptr<Acteur>& acteur : acteurs.enSpan())
+		os << *acteur;
+	os << endl << "Base sur le livre de l'auteur: " << auteur << endl;
+	os << "  Millions de copies vendues: " << millionsDeCopiesVendus << " M copies" << endl;
+	os << "  nombre de pages: " << nombresDePages << " pages" << endl;
 	return os;
 }
 
 ostream& operator<< (ostream& os, const FilmLivre& filmLivre)
 {
-	os << "Titre: " << filmLivre.titre << endl;
-	os << "  Réalisateur: " << filmLivre.realisateur << "  Année : " << filmLivre.annee << endl;
-	os << "  Recette: " << filmLivre.recette << " M$" << endl;
-
-	os << "  Acteurs:" << endl;
-	for (const shared_ptr<Acteur>& acteur : filmLivre.acteurs.enSpan())
-		os << *acteur;
-	os << endl << "Base sur le livre de l'auteur: " << filmLivre.auteur << endl;
-	os << "  Millions de copies vendues: " << filmLivre.millionsDeCopiesVendus << " M copies" << endl;
-	os << "  nombre de pages: " << filmLivre.nombresDePages << " pages" << endl;
-	return os;
+	return filmLivre.output(os);
 }
 
-//Item* trouver(const vector<Item> bibliotheque, const auto& critere)
-//{
-//	for (auto& item : bibliotheque)
-//		if (critere(item))
-//			return item.get();
-//	return nullptr;
-//}
+Item* trouver(const vector<Item> bibliotheque, const auto& critere)
+{
+	for (auto& item : bibliotheque)
+		if (critere(item))
+			return item.get();
+	return nullptr;
+}
+
 
 int main()
 {
@@ -303,15 +332,16 @@ int main()
 	transfererFilms(bibliotheque, listeFilms);
 	ajouterLivres(bibliotheque, "livres.txt");
 
-	//for (int i : range(size(bibliotheque))) {
-	//	//cout << bibliotheque[i].titre << bibliotheque[i].annee << endl;
-	//	cout << bibliotheque[i] << endl;
-	//}
+	cout << ligneDeSeparation;
+
+	for (int i : range(size(bibliotheque))) {
+		//cout << bibliotheque[i].titre << bibliotheque[i].annee << endl;
+		cout << bibliotheque[i] << endl;
+	}
 	//cout << bibliotheque;
-	//
-	FilmLivre filmLivre();
-	//cout << filmLivre;
-	//
-	//// Détruire tout avant de terminer le programme.
+	
+	//FilmLivre filmLivre();
+
+	// Détruire tout avant de terminer le programme.
 	listeFilms.detruire(true);
 }

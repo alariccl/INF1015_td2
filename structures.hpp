@@ -85,60 +85,44 @@ struct Affichable
 {
 	int annee = 0;
 	virtual ~Affichable() = default;
-
-	friend ostream& operator<< (ostream& os, const Affichable& affichable);
+	virtual ostream& output(ostream& os) const = 0;
 };
 
-struct Item : virtual Affichable
+struct Item : Affichable
 {
 	string titre = "";
 
 	friend Film* lireFilm(istream& fichier, ListeFilms& listeFilms);
 	friend shared_ptr<Acteur> ListeFilms::trouverActeur(const string& nomActeur) const;
+	
+	ostream& output(ostream& os) const override;
 
-	friend ostream& operator<< (ostream& os, const Item& item);
 };
 
-struct Film : virtual public Item
+struct Film : Item
 {
-	string realisateur; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
+	string realisateur = ""; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
 	int recette = 0; // Année de sortie et recette globale du film en millions de dollars
 	ListeActeurs acteurs;
-
 	friend Film* lireFilm(istream& fichier, ListeFilms& listeFilms);
 	friend shared_ptr<Acteur> ListeFilms::trouverActeur(const string& nomActeur) const;
-
-	friend ostream& operator<< (ostream& os, const Film& film);
-
+	ostream& output(ostream& os) const override;
 };
 
 struct Acteur
 {
-	string nom; int anneeNaissance = 0; char sexe = '\0';
+	string nom = ""; int anneeNaissance = 0; char sexe = '\0';
 };
 
-struct Livre : virtual public Item
+struct Livre : Item
 {
 	string auteur = "";
 	int millionsDeCopiesVendus = 0, nombresDePages = 0;
-
-	friend ostream& operator<< (ostream& os, const Livre& livre);
+	ostream& output(ostream& os) const override;
 };
 
-struct FilmLivre : public Film, public Livre
+struct FilmLivre : Film, Livre
 {
-	FilmLivre() = default;
-	FilmLivre(const Film& film, const Livre& livre) 
-	{
-		titre = film.titre;
-		annee = film.annee;
-		realisateur = film.realisateur;
-		recette = film.recette;
-		acteurs = ListeActeurs(film.acteurs);
-		auteur = livre.auteur;
-		millionsDeCopiesVendus = livre.millionsDeCopiesVendus;
-		nombresDePages = livre.nombresDePages;
-	}
-
-	friend ostream& operator<< (ostream& os, const FilmLivre& filmLivre);
+	ostream& output(ostream& os) const override;
 };
+
