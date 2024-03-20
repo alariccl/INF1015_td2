@@ -225,16 +225,16 @@ ostream& operator<< (ostream& os, const Affichable& affichable)
 
 void Item::afficherSur(ostream& os) const
 {
-	os << "Titre: " << titre << "  Année:" << anneeSortie << endl;
+	os << titre << ", ";
 }
 
 void Film::afficherSpecifiqueSur(ostream& os) const
 {
-	os << "  Réalisateur: " << realisateur << endl;
-	os << "  Recette: " << recette << "M$" << endl;
-	os << "Acteurs:" << endl;
-	for (auto&& acteur : acteurs.enSpan())
-		os << *acteur;
+	os << "par " << realisateur << endl;
+	/*os << "  Recette: " << recette << "M$" << endl;
+	os << "Acteurs:" << endl;*/
+	/*for (auto&& acteur : acteurs.enSpan())
+		os << *acteur;*/
 }
 
 void Film::afficherSur(ostream& os) const
@@ -245,8 +245,8 @@ void Film::afficherSur(ostream& os) const
 
 void Livre::afficherSpecifiqueSur(ostream& os) const
 {
-	os << "  Auteur: " << auteur << endl;
-	os << "  Vendus: " << copiesVendues << "M  Pages: " << nPages << endl;
+	os << "de " << auteur << endl;
+	//os << "  Vendus: " << copiesVendues << "M  Pages: " << nPages << endl;
 }
 
 void Livre::afficherSur(ostream& os) const
@@ -258,10 +258,10 @@ void Livre::afficherSur(ostream& os) const
 void FilmLivre::afficherSur(ostream& os) const
 {
 	Item::afficherSur(os);
-	os << "Combo:" << endl;
+	//os << "Combo:" << endl;
 	// L'affichage comme l'exemple sur Discord est accepté, ici on montre comment on pourrait séparer en deux méthodes pour ne pas avoir le même titre d'Item affiché plusieurs fois.
 	Film::afficherSpecifiqueSur(os);
-	os << "Livre:" << endl;
+	//os << "Livre:" << endl;
 	Livre::afficherSpecifiqueSur(os);
 }
 
@@ -280,8 +280,9 @@ void Livre::lireDe(istream& is)
 Livre::Livre(istream& is) {
 	lireDe(is);
 }
-
-void afficherListeItems(span<unique_ptr<Item>> listeItems)
+// TODO : changer la fonction en template
+template <typename T>  
+void afficherListeItems(span<unique_ptr<T>> listeItems)
 {
 	static const string ligneDeSeparation = "\033[32m────────────────────────────────────────\033[0m\n";
 	cout << ligneDeSeparation;
@@ -362,8 +363,8 @@ int main(int argc, char* argv[])
 	}
 
 	// 4.
-	items.push_back(make_unique<FilmLivre>(dynamic_cast<Film&>(*items[4]), dynamic_cast<Livre&>(*items[9])));  // On ne demandait pas de faire une recherche; serait direct avec la matière du TD5.
+	items.push_back(make_unique<FilmLivre>(dynamic_cast<Film&>(*items[4]), dynamic_cast<Livre&>(*items[10])));  // On ne demandait pas de faire une recherche; serait direct avec la matière du TD5.
 
 	// 3.
-	afficherListeItems(items);
+	afficherListeItems<Item>(items);
 }

@@ -33,7 +33,7 @@ public:
 		return nullptr;
 	}
 
-private:
+//private:
 	void changeDimension(int nouvelleCapacite);
 
 	int capacite = 0, nElements = 0;
@@ -72,7 +72,7 @@ public:
 	shared_ptr<T>& operator[] (int index) const { assert(0 <= index && index < nElements_); return elements_[index]; }
 	span<shared_ptr<T>> enSpan() const { return span(elements_.get(), nElements_); }
 
-private:
+//private:
 	int capacite_ = 0, nElements_ = 0;
 	unique_ptr<shared_ptr<T>[]> elements_;
 };
@@ -92,7 +92,7 @@ public:
 
 	friend Film* lireFilm(istream& fichier, ListeFilms& listeFilms);
 
-private:
+//private:
 	string titre;
 	int anneeSortie = 0;
 };
@@ -107,7 +107,7 @@ public:
 	friend shared_ptr<Acteur> ListeFilms::trouverActeur(const string& nomActeur) const;
 	template <typename T> struct accessible_pour_tests_par;  // Non demandé, ni matière au cours, permet d'ajouter des accès pour les tests.
 
-private:
+//private:
 	string realisateur; // (on suppose qu'il n'y a qu'un réalisateur).
 	int recette = 0; // Recette globale du film en millions de dollars
 	ListeActeurs acteurs;
@@ -122,7 +122,7 @@ public:
 	void afficherSpecifiqueSur(ostream& os) const;
 	void lireDe(istream& is);
 
-private:
+//private:
 	string auteur;
 	int copiesVendues = 0, nPages = 0;
 };
