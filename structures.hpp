@@ -1,14 +1,11 @@
-////////////////////////////////////////////////////////////////////////////////
-/// \file   structures.cpp
-/// \author Alaric Chan Lock et Bryan Sanchez
-///
-/// Les déclarations de ce qui est dans tp2.cpp
-////////////////////////////////////////////////////////////////////////////////
+// Solutionnaire du TD4 INF1015 hiver 2024
+// Par Francois-R.Boyer@PolyMtl.ca
 
 #pragma once
 // Structures mémoires pour une collection de films.
 
 #include <string>
+#include <iostream>
 #include <memory>
 #include <functional>
 #include <cassert>
@@ -16,17 +13,18 @@
 using gsl::span;
 using namespace std;
 
-struct Film; struct Acteur; // Permet d'utiliser les types alors qu'ils seront défini après.
+class Film; struct Acteur; // Permet d'utiliser les types alors qu'ils seront défini après.
 
 class ListeFilms {
 public:
 	ListeFilms() = default;
 	void ajouterFilm(Film* film);
-	void enleverFilm(const Film* film);
+	//void enleverFilm(const Film* film);
 	shared_ptr<Acteur> trouverActeur(const string& nomActeur) const;
 	span<Film*> enSpan() const;
 	int size() const { return nElements; }
-	void detruire(bool possedeLesFilms = false);
+	int capacity() const { return capacite; }  // Juste pour les tests, pas demandé dans le TD.
+	void detruire();
 	Film*& operator[] (int index) { assert(0 <= index && index < nElements);  return elements[index]; }
 	Film* trouver(const function<bool(const Film&)>& critere) {
 		for (auto& film : enSpan())
@@ -66,7 +64,7 @@ public:
 
 	void ajouter(shared_ptr<T> element)
 	{
-		assert(nElements_ < capacite_);  // Comme dans le TD précédent, on ne demande pas la réallocation pour ListeActeurs...
+		assert(nElements_ < capacite_);  // Comme dans le TD1, on ne demande pas la réallocation pour ListeActeurs...
 		elements_[nElements_++] = move(element);
 	}
 
@@ -81,48 +79,62 @@ private:
 
 using ListeActeurs = Liste<Acteur>;
 
-struct Affichable
-{
-	int annee = 0;
+class Affichable {
+public:
+	virtual void afficherSur(ostream& os) const = 0;
 	virtual ~Affichable() = default;
-	virtual ostream& output(ostream& os) const = 0;
 };
 
-struct Item : Affichable
+class Item : public Affichable {
+public:
+	void afficherSur(ostream& os) const override;
+	void lireDe(istream& is);
+
+	friend Film* lireFilm(istream& fichier, ListeFilms& listeFilms);
+
+private:
+	string titre;
+	int anneeSortie = 0;
+};
+
+class Film : virtual public Item
 {
-	string titre = "";
+public:
+	void afficherSur(ostream& os) const override;
+	void afficherSpecifiqueSur(ostream& os) const;  // Affiche la parite de cette classe sans afficher la base virtuelle.
 
 	friend Film* lireFilm(istream& fichier, ListeFilms& listeFilms);
 	friend shared_ptr<Acteur> ListeFilms::trouverActeur(const string& nomActeur) const;
-	
-	ostream& output(ostream& os) const override;
+	template <typename T> struct accessible_pour_tests_par;  // Non demandé, ni matière au cours, permet d'ajouter des accès pour les tests.
 
-};
-
-struct Film : Item
-{
-	string realisateur = ""; // Titre et nom du réalisateur (on suppose qu'il n'y a qu'un réalisateur).
-	int recette = 0; // Année de sortie et recette globale du film en millions de dollars
+private:
+	string realisateur; // (on suppose qu'il n'y a qu'un réalisateur).
+	int recette = 0; // Recette globale du film en millions de dollars
 	ListeActeurs acteurs;
-	friend Film* lireFilm(istream& fichier, ListeFilms& listeFilms);
-	friend shared_ptr<Acteur> ListeFilms::trouverActeur(const string& nomActeur) const;
-	ostream& output(ostream& os) const override;
+};
+
+class Livre : virtual public Item
+{
+public:
+	Livre() = default;
+	explicit Livre(istream& is);
+	void afficherSur(ostream& os) const override;
+	void afficherSpecifiqueSur(ostream& os) const;
+	void lireDe(istream& is);
+
+private:
+	string auteur;
+	int copiesVendues = 0, nPages = 0;
+};
+
+class FilmLivre : public Film, public Livre {
+public:
+	FilmLivre(const Film& film, const Livre& livre) : Item(film), Film(film), Livre(livre) { }
+
+	void afficherSur(ostream& os) const override;
 };
 
 struct Acteur
 {
-	string nom = ""; int anneeNaissance = 0; char sexe = '\0';
+	string nom; int anneeNaissance = 0; char sexe = '\0';
 };
-
-struct Livre : Item
-{
-	string auteur = "";
-	int millionsDeCopiesVendus = 0, nombresDePages = 0;
-	ostream& output(ostream& os) const override;
-};
-
-struct FilmLivre : Film, Livre
-{
-	ostream& output(ostream& os) const override;
-};
-
