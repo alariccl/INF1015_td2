@@ -138,3 +138,6 @@ struct Acteur
 {
 	string nom; int anneeNaissance = 0; char sexe = '\0';
 };
+
+// TODO : classe Liste, Node, Iterator 
+// chapitre 14 p13 pour faire la question 1 

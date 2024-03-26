@@ -225,12 +225,12 @@ ostream& operator<< (ostream& os, const Affichable& affichable)
 
 void Item::afficherSur(ostream& os) const
 {
-	os << titre << ", ";
+	os << titre;
 }
 
 void Film::afficherSpecifiqueSur(ostream& os) const
 {
-	os << "par " << realisateur << endl;
+	os << ", par " << realisateur << endl;
 	/*os << "  Recette: " << recette << "M$" << endl;
 	os << "Acteurs:" << endl;*/
 	/*for (auto&& acteur : acteurs.enSpan())
@@ -245,7 +245,7 @@ void Film::afficherSur(ostream& os) const
 
 void Livre::afficherSpecifiqueSur(ostream& os) const
 {
-	os << "de " << auteur << endl;
+	os << ", de " << auteur << endl;
 	//os << "  Vendus: " << copiesVendues << "M  Pages: " << nPages << endl;
 }
 
